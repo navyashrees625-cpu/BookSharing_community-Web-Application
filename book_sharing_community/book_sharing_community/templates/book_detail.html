@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} - BookShare{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('books.catalog') }}" class="text-decoration-none">Library</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ book.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-5">
+        <!-- Left: Book Cover & Action Button -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <img src="{{ book.cover_url }}" alt="{{ book.title }}" class="img-fluid w-100 detail-cover-img">
+                <div class="card-body p-4 text-center">
+                    {% if book.is_available %}
+                        <div class="alert alert-success d-flex align-items-center justify-content-center gap-2 mb-3 py-2">
+                            <i class="bi bi-check-circle-fill"></i> Available for Borrowing
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning d-flex align-items-center justify-content-center gap-2 mb-3 py-2">
+                            <i class="bi bi-clock-history"></i> Currently Borrowed
+                        </div>
+                    {% endif %}
+
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.id == book.owner_id %}
+                            <!-- Owner Actions -->
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('books.edit_book', book_id=book.id) }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil me-1"></i> Edit Book Details
+                                </a>
+                                <form action="{{ url_for('books.delete_book', book_id=book.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this book from the library?');">
+                                    <button type="submit" class="btn btn-outline-danger w-100">
+                                        <i class="bi bi-trash me-1"></i> Remove Book
+                                    </button>
+                                </form>
+                            </div>
+                        {% else %}
+                            <!-- Borrower Actions -->
+                            {% if book.is_available %}
+                                {% if existing_request %}
+                                    <button class="btn btn-secondary w-100 py-2 rounded-pill" disabled>
+                                        <i class="bi bi-hourglass-split me-1"></i> Request Pending
+                                    </button>
+                                {% else %}
+                                    <button class="btn btn-primary w-100 py-2 rounded-pill fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#borrowModal">
+                                        <i class="bi bi-arrow-left-right me-1"></i> Request to Borrow
+                                    </button>
+                                {% endif %}
+                            {% else %}
+                                <button class="btn btn-light text-muted w-100 py-2 rounded-pill border" disabled>
+                                    <i class="bi bi-lock me-1"></i> Currently in Circulation
+                                </button>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-primary w-100 py-2 rounded-pill">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Log In to Borrow
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Owner Info Card -->
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <h6 class="fw-bold mb-3 text-muted text-uppercase small">Book Shared By</h6>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-circle-lg">
+                        {{ book.owner.full_name[:1].upper() }}
+                    </div>
+                    <div>
+                        <a href="{{ url_for('auth.public_profile', user_id=book.owner.id) }}" class="fw-bold text-dark text-decoration-none">
+                            {{ book.owner.full_name }}
+                        </a>
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-geo-alt me-1"></i> {{ book.owner.location or 'Campus Community' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Book Details, Description & Reviews -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 bg-white">
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">{{ book.genre }}</span>
+                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">Condition: {{ book.condition }}</span>
+                    {% if book.isbn %}
+                        <span class="badge bg-light text-muted border px-3 py-2 rounded-pill">ISBN: {{ book.isbn }}</span>
+                    {% endif %}
+                </div>
+
+                <h1 class="display-6 fw-bold font-serif mb-2">{{ book.title }}</h1>
+                <h5 class="text-muted fw-normal mb-3">by <span class="text-dark fw-medium">{{ book.author }}</span></h5>
+
+                <!-- Rating summary -->
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <div class="text-warning fs-5">
+                        {% for i in range(1, 6) %}
+                            {% if i <= book.average_rating|round %}
+                                <i class="bi bi-star-fill"></i>
+                            {% else %}
+                                <i class="bi bi-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <span class="fw-bold fs-5">{{ book.average_rating }}</span>
+                    <span class="text-muted">({{ book.review_count }} community reviews)</span>
+                </div>
+
+                <hr class="my-4">
+
+                <h5 class="fw-bold mb-3">About This Book</h5>
+                <p class="text-secondary lead fs-6 lh-lg mb-4">
+                    {{ book.description or "No description provided for this book yet." }}
+                </p>
+
+                <div class="row g-3 p-3 bg-light rounded-3 text-muted small">
+                    <div class="col-sm-4">
+                        <span class="d-block fw-semibold text-dark">Date Listed</span>
+                        {{ book.created_at.strftime('%b %d, %Y') }}
+                    </div>
+                    <div class="col-sm-4">
+                        <span class="d-block fw-semibold text-dark">Physical Condition</span>
+                        {{ book.condition }}
+                    </div>
+                    <div class="col-sm-4">
+                        <span class="d-block fw-semibold text-dark">Lending Type</span>
+                        Free Peer-to-Peer
+                    </div>
+                </div>
+            </div>
+
+            <!-- Community Reviews Section -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h4 class="fw-bold font-serif mb-0">Community Reviews</h4>
+                    <span class="badge bg-light text-dark border">{{ reviews|length }} Reviews</span>
+                </div>
+
+                <!-- Review Submission Form -->
+                {% if current_user.is_authenticated %}
+                    <div class="card bg-light border-0 rounded-3 p-4 mb-4">
+                        <h6 class="fw-bold mb-3">
+                            {% if user_review %}Edit Your Review{% else %}Share Your Thoughts on This Book{% endif %}
+                        </h6>
+                        <form action="{{ url_for('books.submit_review', book_id=book.id) }}" method="POST">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Your Rating</label>
+                                    <select name="rating" class="form-select" required>
+                                        <option value="5" {% if user_review and user_review.rating == 5 %}selected{% endif %}>⭐⭐⭐⭐⭐ (5 - Masterpiece)</option>
+                                        <option value="4" {% if user_review and user_review.rating == 4 %}selected{% endif %}>⭐⭐⭐⭐ (4 - Very Good)</option>
+                                        <option value="3" {% if not user_review or user_review.rating == 3 %}selected{% endif %}>⭐⭐⭐ (3 - Good)</option>
+                                        <option value="2" {% if user_review and user_review.rating == 2 %}selected{% endif %}>⭐⭐ (2 - Fair)</option>
+                                        <option value="1" {% if user_review and user_review.rating == 1 %}selected{% endif %}>⭐ (1 - Disappointing)</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-semibold">Your Comments / Notes for other students</label>
+                                    <textarea name="comment" class="form-control" rows="3" placeholder="What did you learn? Was it helpful for exams or casual reading?" required>{{ user_review.comment if user_review else '' }}</textarea>
+                                </div>
+                                <div class="col-12 text-end">
+                                    <button type="submit" class="btn btn-primary px-4 rounded-pill">
+                                        {% if user_review %}Update Review{% else %}Post Review{% endif %}
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="alert alert-light border text-center p-3 mb-4">
+                        <a href="{{ url_for('auth.login', next=request.path) }}" class="fw-semibold">Log in</a> to write a review for this book.
+                    </div>
+                {% endif %}
+
+                <!-- List Reviews -->
+                <div class="review-list">
+                    {% for rev in reviews %}
+                        <div class="border-bottom py-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="avatar-circle-sm">
+                                        {{ rev.user.full_name[:1].upper() }}
+                                    </div>
+                                    <span class="fw-semibold text-dark">{{ rev.user.full_name }}</span>
+                                </div>
+                                <div class="text-warning small">
+                                    {% for i in range(1, 6) %}
+                                        {% if i <= rev.rating %}
+                                            <i class="bi bi-star-fill"></i>
+                                        {% else %}
+                                            <i class="bi bi-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="text-muted ms-2">{{ rev.created_at.strftime('%b %d, %Y') }}</span>
+                                </div>
+                            </div>
+                            <p class="text-secondary mb-0 small">{{ rev.comment }}</p>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4 mb-0">No reviews yet. Be the first reader to share a review!</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Borrow Request Modal -->
+{% if current_user.is_authenticated and book.is_available and current_user.id != book.owner_id %}
+<div class="modal fade" id="borrowModal" tabindex="-1" aria-labelledby="borrowModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="borrowModalLabel">Request to Borrow "{{ book.title }}"</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('requests.create_request', book_id=book.id) }}" method="POST">
+                <div class="modal-body py-4">
+                    <div class="alert alert-primary py-2 small d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span>This request will be sent directly to <strong>{{ book.owner.full_name }}</strong>.</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Requested Duration</label>
+                        <select name="duration_days" class="form-select" required>
+                            <option value="7">7 Days (1 Week)</option>
+                            <option value="14" selected>14 Days (2 Weeks)</option>
+                            <option value="21">21 Days (3 Weeks)</option>
+                            <option value="30">30 Days (1 Month)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Message to Owner / Meetup Proposal</label>
+                        <textarea name="message" class="form-control" rows="3" placeholder="Hi! I'd love to read this for my semester prep. Can we meet near the central library or cafeteria?" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Send Borrow Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

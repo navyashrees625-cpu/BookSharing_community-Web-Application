@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile & Books - BookShare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- Left Column: User Profile Info & Edit -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+                <div class="text-center mb-3">
+                    <div class="avatar-circle-xl mx-auto mb-2">
+                        {{ user.full_name[:1].upper() }}
+                    </div>
+                    <h4 class="fw-bold mb-0">{{ user.full_name }}</h4>
+                    <p class="text-muted small mb-2">@{{ user.username }}</p>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1">Community Member</span>
+                </div>
+
+                <hr class="my-3">
+
+                <div class="small mb-3">
+                    <div class="d-flex align-items-center gap-2 mb-2 text-muted">
+                        <i class="bi bi-envelope"></i>
+                        <span>{{ user.email }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2 text-muted">
+                        <i class="bi bi-telephone"></i>
+                        <span>{{ user.phone or 'No phone added' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2 text-muted">
+                        <i class="bi bi-geo-alt"></i>
+                        <span>{{ user.location or 'Campus location not set' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 text-muted">
+                        <i class="bi bi-calendar-event"></i>
+                        <span>Joined {{ user.created_at.strftime('%b %Y') }}</span>
+                    </div>
+                </div>
+
+                <!-- Update Details Collapse -->
+                <button class="btn btn-sm btn-outline-primary w-100 rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#editProfileForm">
+                    <i class="bi bi-pencil me-1"></i> Edit Profile Info
+                </button>
+
+                <div class="collapse mt-3" id="editProfileForm">
+                    <form action="{{ url_for('auth.profile') }}" method="POST" class="border-top pt-3">
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Full Name</label>
+                            <input type="text" name="full_name" class="form-control form-control-sm" value="{{ user.full_name }}" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Phone</label>
+                            <input type="tel" name="phone" class="form-control form-control-sm" value="{{ user.phone or '' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Location / Dept / Hostel</label>
+                            <input type="text" name="location" class="form-control form-control-sm" value="{{ user.location or '' }}">
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary w-100 rounded-pill">Save Details</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Stats Box -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <h6 class="fw-bold text-muted small text-uppercase mb-3">Your Sharing Activity</h6>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted small">Books Listed:</span>
+                    <span class="fw-bold">{{ books|length }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted small">Active Borrow Requests:</span>
+                    <span class="fw-bold">{{ user.received_requests.filter_by(status='Pending').count() }} pending</span>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span class="text-muted small">Reviews Written:</span>
+                    <span class="fw-bold">{{ user.reviews.count() }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: My Shared Books -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h4 class="fw-bold font-serif mb-0">My Shared Books ({{ books|length }})</h4>
+                        <p class="text-muted small mb-0">Books you have offered for community lending</p>
+                    </div>
+                    <a href="{{ url_for('books.add_book') }}" class="btn btn-sm btn-primary rounded-pill px-3">
+                        <i class="bi bi-plus-circle me-1"></i> Add Another Book
+                    </a>
+                </div>
+
+                <div class="row g-3">
+                    {% for book in books %}
+                        <div class="col-md-6">
+                            <div class="card border rounded-3 p-3 h-100 position-relative">
+                                <div class="d-flex gap-3">
+                                    <img src="{{ book.cover_url }}" alt="{{ book.title }}" class="rounded shadow-sm" style="width: 70px; height: 95px; object-fit: cover;">
+                                    <div class="d-flex flex-column flex-grow-1 overflow-hidden">
+                                        <h6 class="fw-bold mb-1 text-truncate" title="{{ book.title }}">
+                                            <a href="{{ url_for('books.detail', book_id=book.id) }}" class="text-dark text-decoration-none">
+                                                {{ book.title }}
+                                            </a>
+                                        </h6>
+                                        <p class="text-muted small mb-2 text-truncate">by {{ book.author }}</p>
+                                        
+                                        <div class="mb-2">
+                                            {% if book.is_available %}
+                                                <span class="badge bg-success-subtle text-success py-1 px-2 small">Available</span>
+                                            {% else %}
+                                                <span class="badge bg-warning-subtle text-warning-emphasis py-1 px-2 small">Borrowed</span>
+                                            {% endif %}
+                                            <span class="badge bg-light text-dark border py-1 px-2 small">{{ book.condition }}</span>
+                                        </div>
+
+                                        <div class="mt-auto d-flex align-items-center gap-2 pt-2 border-top">
+                                            <a href="{{ url_for('books.edit_book', book_id=book.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Edit">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                            <form action="{{ url_for('books.delete_book', book_id=book.id) }}" method="POST" onsubmit="return confirm('Remove this book from library?');" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-12 text-center py-5">
+                            <i class="bi bi-journal-plus text-muted fs-1 mb-2"></i>
+                            <h6 class="fw-bold">You haven't listed any books yet!</h6>
+                            <p class="text-muted small">Share your books so classmates and fellow readers can borrow them.</p>
+                            <a href="{{ url_for('books.add_book') }}" class="btn btn-primary rounded-pill px-4 btn-sm">
+                                <i class="bi bi-plus-circle me-1"></i> List Your First Book
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

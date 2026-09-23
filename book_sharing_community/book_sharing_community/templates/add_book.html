@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Share a Book - BookShare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="brand-icon-wrapper bg-primary-subtle text-primary">
+                        <i class="bi bi-book fs-4"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold font-serif mb-0">Share a Book</h2>
+                        <p class="text-muted small mb-0">Add a book from your collection to the community library</p>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('books.add_book') }}" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold small">Book Title <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g. Clean Code: A Handbook of Agile Software Craftsmanship" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Author <span class="text-danger">*</span></label>
+                            <input type="text" name="author" class="form-control" placeholder="e.g. Robert C. Martin" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Genre <span class="text-danger">*</span></label>
+                            <select name="genre" class="form-select" required>
+                                <option value="" disabled selected>Select a genre...</option>
+                                {% for g in genres %}
+                                    <option value="{{ g }}">{{ g }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold small">Physical Condition</label>
+                            <select name="condition" class="form-select">
+                                {% for c in conditions %}
+                                    <option value="{{ c }}" {% if c == 'Good' %}selected{% endif %}>{{ c }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold small">ISBN (Optional)</label>
+                            <input type="text" name="isbn" class="form-control" placeholder="e.g. 978-0132350884">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Cover Image URL</label>
+                            <input type="url" name="cover_url" class="form-control" placeholder="https://images.unsplash.com/... or leave blank for a default cover">
+                            <div class="form-text">Paste an image link from Google Books or Unsplash, or leave blank to use a default cover.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Description / Notes</label>
+                            <textarea name="description" class="form-control" rows="4" placeholder="Mention why you recommend this book, highlights, course codes (e.g. CS201), or any specific chapters that are especially useful..."></textarea>
+                        </div>
+
+                        <div class="col-12 d-flex justify-content-end gap-2 pt-3">
+                            <a href="{{ url_for('books.catalog') }}" class="btn btn-light rounded-pill px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                <i class="bi bi-cloud-arrow-up me-1"></i> Add to Community
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

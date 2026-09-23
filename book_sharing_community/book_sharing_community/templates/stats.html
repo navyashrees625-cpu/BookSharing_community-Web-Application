@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Community Statistics - BookShare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="text-center mb-5">
+        <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold mb-2">Live Insights</span>
+        <h2 class="fw-bold font-serif">Community Impact & Library Stats</h2>
+        <p class="text-muted small">Tracking the reading footprint and peer exchange of our community</p>
+    </div>
+
+    <!-- Top Key Metrics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center bg-white h-100">
+                <div class="stat-icon bg-primary-subtle text-primary mx-auto mb-3">
+                    <i class="bi bi-book fs-3"></i>
+                </div>
+                <h2 class="fw-bold mb-1">{{ total_books }}</h2>
+                <span class="text-muted small">Total Books Cataloged</span>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center bg-white h-100">
+                <div class="stat-icon bg-success-subtle text-success mx-auto mb-3">
+                    <i class="bi bi-people fs-3"></i>
+                </div>
+                <h2 class="fw-bold mb-1">{{ total_users }}</h2>
+                <span class="text-muted small">Active Community Members</span>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center bg-white h-100">
+                <div class="stat-icon bg-warning-subtle text-warning mx-auto mb-3">
+                    <i class="bi bi-arrow-repeat fs-3"></i>
+                </div>
+                <h2 class="fw-bold mb-1">{{ active_borrows }}</h2>
+                <span class="text-muted small">Books in Active Circulation</span>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center bg-white h-100">
+                <div class="stat-icon bg-info-subtle text-info mx-auto mb-3">
+                    <i class="bi bi-check-circle fs-3"></i>
+                </div>
+                <h2 class="fw-bold mb-1">{{ completed_returns }}</h2>
+                <span class="text-muted small">Completed Returns</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Genre Distribution -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white h-100">
+                <h5 class="fw-bold font-serif mb-4">Books by Category / Genre</h5>
+                {% if genre_counts %}
+                    {% for genre, count in genre_counts %}
+                        {% set pct = (count / total_books * 100)|round(1) if total_books > 0 else 0 %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small fw-semibold mb-1">
+                                <span>{{ genre }}</span>
+                                <span class="text-muted">{{ count }} books ({{ pct }}%)</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ pct }}%;" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No genre data available yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Community Health Overview -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white h-100">
+                <h5 class="fw-bold font-serif mb-4">Library Health & Circulation</h5>
+
+                <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-3 mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-check2-circle text-success fs-4"></i>
+                        <div>
+                            <span class="fw-bold d-block">Available to Borrow</span>
+                            <small class="text-muted">Ready on shelves immediately</small>
+                        </div>
+                    </div>
+                    <span class="badge bg-success fs-6">{{ available_books }}</span>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-3 mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-clock-history text-warning fs-4"></i>
+                        <div>
+                            <span class="fw-bold d-block">Currently Borrowed</span>
+                            <small class="text-muted">Being read by fellow peers</small>
+                        </div>
+                    </div>
+                    <span class="badge bg-warning text-dark fs-6">{{ borrowed_books }}</span>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-3 mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-chat-heart text-danger fs-4"></i>
+                        <div>
+                            <span class="fw-bold d-block">Community Reviews</span>
+                            <small class="text-muted">Feedback and recommendations</small>
+                        </div>
+                    </div>
+                    <span class="badge bg-danger fs-6">{{ total_reviews }}</span>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-send-check text-primary fs-4"></i>
+                        <div>
+                            <span class="fw-bold d-block">Total Requests Processed</span>
+                            <small class="text-muted">All-time borrow interactions</small>
+                        </div>
+                    </div>
+                    <span class="badge bg-primary fs-6">{{ total_requests }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

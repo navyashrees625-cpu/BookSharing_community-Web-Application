@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}About Mini-Project - BookShare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold mb-2">Project Documentation</span>
+                <h2 class="fw-bold font-serif">Book Sharing Community Web Application</h2>
+                <p class="text-muted">A Semester Mini-Project built with Python, Flask, and SQLite</p>
+            </div>
+
+            <!-- Problem & Objective -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white mb-4">
+                <h4 class="fw-bold font-serif mb-3 text-primary"><i class="bi bi-bullseye me-2"></i>1. Problem Statement & Motivation</h4>
+                <p class="text-secondary lh-lg mb-3">
+                    College textbooks, reference manuals, and popular novels are often expensive and only needed for a single academic semester or a short reading period. Once read, these valuable physical copies remain idle on student shelves, while other students struggle to source the same books.
+                </p>
+                <p class="text-secondary lh-lg mb-0">
+                    <strong>BookShare</strong> solves this issue by establishing a peer-to-peer campus book lending network. It connects book owners with students looking for reading material, drastically cutting textbook expenses, promoting knowledge reuse, and encouraging eco-friendly sharing habits across campus.
+                </p>
+            </div>
+
+            <!-- Technical Architecture -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white mb-4">
+                <h4 class="fw-bold font-serif mb-3 text-primary"><i class="bi bi-cpu me-2"></i>2. Architecture & Technology Stack</h4>
+                
+                <div class="row g-4 mt-1">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 h-100">
+                            <h6 class="fw-bold text-dark"><i class="bi bi-code-slash me-2 text-primary"></i>Backend & Framework</h6>
+                            <ul class="text-muted small mb-0 ps-3">
+                                <li><strong>Python 3.14</strong>: Core programming language.</li>
+                                <li><strong>Flask 3.x</strong>: Lightweight WSGI web application framework utilizing the Model-View-Controller (MVC) blueprint pattern.</li>
+                                <li><strong>Flask-Login & Werkzeug</strong>: Secure session handling and password hashing (PBKDF2/scrypt).</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 h-100">
+                            <h6 class="fw-bold text-dark"><i class="bi bi-database me-2 text-primary"></i>Database & Storage</h6>
+                            <ul class="text-muted small mb-0 ps-3">
+                                <li><strong>SQLite</strong>: Zero-configuration, serverless, transactional relational database engine.</li>
+                                <li><strong>SQLAlchemy ORM</strong>: High-level Python Object-Relational Mapper preventing raw SQL injection vulnerabilities and enforcing relational integrity.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 h-100">
+                            <h6 class="fw-bold text-dark"><i class="bi bi-window me-2 text-primary"></i>Frontend & UX</h6>
+                            <ul class="text-muted small mb-0 ps-3">
+                                <li><strong>Jinja2</strong>: Server-side template engine for rendering dynamic views.</li>
+                                <li><strong>Bootstrap 5 & Bootstrap Icons</strong>: Modern, responsive UI optimized for desktops, tablets, and smartphones.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 h-100">
+                            <h6 class="fw-bold text-dark"><i class="bi bi-shield-check me-2 text-primary"></i>Security & Integrity</h6>
+                            <ul class="text-muted small mb-0 ps-3">
+                                <li>Salted cryptographic password hashing.</li>
+                                <li>Protection against self-borrowing and duplicate active requests.</li>
+                                <li>Automated cascade deletions and strict status transitions.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Modules -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white mb-4">
+                <h4 class="fw-bold font-serif mb-3 text-primary"><i class="bi bi-diagram-3 me-2"></i>3. System Modules</h4>
+                <div class="accordion" id="modulesAccordion">
+                    <div class="accordion-item border-0 mb-2 rounded-3 bg-light">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button rounded-3 collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#modAuth">
+                                Module 1: User Authentication & Profile Management
+                            </button>
+                        </h2>
+                        <div id="modAuth" class="accordion-collapse collapse" data-bs-parent="#modulesAccordion">
+                            <div class="accordion-body small text-secondary">
+                                Enables students to sign up, log in securely, update contact numbers, hostel/campus locations, and manage their personal library of listed books.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item border-0 mb-2 rounded-3 bg-light">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button rounded-3 collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#modCatalog">
+                                Module 2: Book Catalog & Multi-Criteria Filtering
+                            </button>
+                        </h2>
+                        <div id="modCatalog" class="accordion-collapse collapse" data-bs-parent="#modulesAccordion">
+                            <div class="accordion-body small text-secondary">
+                                Complete CRUD capabilities for books. Readers can search titles or authors via live queries and filter by Genre, Physical Condition (Like New, Good, Fair), and Availability.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item border-0 mb-2 rounded-3 bg-light">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button rounded-3 collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#modRequests">
+                                Module 3: Request & Exchange Lifecycle
+                            </button>
+                        </h2>
+                        <div id="modRequests" class="accordion-collapse collapse" data-bs-parent="#modulesAccordion">
+                            <div class="accordion-body small text-secondary">
+                                State-machine managing requests: <code>Pending</code> &rarr; <code>Approved</code> &rarr; <code>Returned</code> (or <code>Declined</code>). When approved, the book is automatically marked as unavailable; when returned, availability is restored.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item border-0 rounded-3 bg-light">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button rounded-3 collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#modReviews">
+                                Module 4: Community Review & Rating System
+                            </button>
+                        </h2>
+                        <div id="modReviews" class="accordion-collapse collapse" data-bs-parent="#modulesAccordion">
+                            <div class="accordion-body small text-secondary">
+                                Peer feedback loop allowing users to rate books from 1 to 5 stars, review usefulness, and calculate dynamic community averages for all catalog entries.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Future Scope -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+                <h4 class="fw-bold font-serif mb-3 text-primary"><i class="bi bi-stars me-2"></i>4. Future Enhancements</h4>
+                <ul class="text-secondary small mb-0 ps-3 lh-lg">
+                    <li><strong>Push / SMS Notifications</strong>: Automatic reminders 2 days prior to the return due date.</li>
+                    <li><strong>Campus Geolocation Distance</strong>: Sorting available books by proximity (e.g., Hostels vs Day-Scholar departments).</li>
+                    <li><strong>AI Book Recommender</strong>: Recommending relevant books based on previous borrowing patterns and curriculum syllabi.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

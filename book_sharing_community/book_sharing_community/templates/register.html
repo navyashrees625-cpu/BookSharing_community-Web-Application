@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Join Community - BookShare{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+                <div class="text-center mb-4">
+                    <div class="brand-icon-wrapper bg-primary-subtle text-primary mx-auto mb-2">
+                        <i class="bi bi-person-plus fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold font-serif mb-1">Create an Account</h3>
+                    <p class="text-muted small">Join your campus book sharing community</p>
+                </div>
+
+                <form action="{{ url_for('auth.register') }}" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" name="full_name" class="form-control bg-light" placeholder="e.g. Navya Shree" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Username <span class="text-danger">*</span></label>
+                            <input type="text" name="username" class="form-control bg-light" placeholder="e.g. navyashree" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Email Address <span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control bg-light" placeholder="e.g. navyashree@college.edu" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Password <span class="text-danger">*</span></label>
+                            <input type="password" name="password" class="form-control bg-light" placeholder="Min. 6 characters" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Confirm Password <span class="text-danger">*</span></label>
+                            <input type="password" name="confirm_password" class="form-control bg-light" placeholder="Repeat password" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Phone / WhatsApp</label>
+                            <input type="tel" name="phone" class="form-control bg-light" placeholder="e.g. +91 98765 43210">
+                            <div class="form-text">Shared only with approved borrowers.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Campus / Neighborhood Location</label>
+                            <input type="text" name="location" class="form-control bg-light" placeholder="e.g. CS Dept, Block B">
+                        </div>
+
+                        <div class="col-12 pt-3">
+                            <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-semibold shadow-sm">
+                                Register & Join
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-center small text-muted mt-4">
+                        Already have an account? 
+                        <a href="{{ url_for('auth.login') }}" class="fw-semibold text-decoration-none">Sign in here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

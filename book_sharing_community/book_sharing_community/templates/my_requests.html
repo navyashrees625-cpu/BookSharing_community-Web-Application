@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Exchange Requests - BookShare{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h2 class="fw-bold font-serif mb-1">Book Exchange Hub</h2>
+            <p class="text-muted small mb-0">Track and manage your incoming and outgoing book borrowing requests</p>
+        </div>
+        <a href="{{ url_for('books.catalog') }}" class="btn btn-outline-primary rounded-pill px-3 btn-sm">
+            <i class="bi bi-search me-1"></i> Browse More Books
+        </a>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2" id="requestTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-pill px-4" id="incoming-tab" data-bs-toggle="pill" data-bs-target="#incoming" type="button" role="tab">
+                <i class="bi bi-inbox me-1"></i> Incoming Requests
+                {% if pending_incoming_count > 0 %}
+                    <span class="badge bg-danger rounded-pill ms-1">{{ pending_incoming_count }}</span>
+                {% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4" id="outgoing-tab" data-bs-toggle="pill" data-bs-target="#outgoing" type="button" role="tab">
+                <i class="bi bi-send me-1"></i> Outgoing Requests
+                <span class="badge bg-secondary rounded-pill ms-1">{{ outgoing|length }}</span>
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="requestTabsContent">
+        <!-- Incoming Requests Tab -->
+        <div class="tab-pane fade show active" id="incoming" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <h5 class="fw-bold mb-3">Requests for Your Books</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Book</th>
+                                <th>Borrower</th>
+                                <th>Duration</th>
+                                <th>Note / Proposed Meetup</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in incoming %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('books.detail', book_id=req.book.id) }}" class="fw-semibold text-dark text-decoration-none">
+                                            {{ req.book.title }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div>{{ req.borrower.full_name }}</div>
+                                        <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ req.borrower.location or 'Campus' }}</small>
+                                        {% if req.status == 'Approved' and req.borrower.phone %}
+                                            <br><small class="text-success"><i class="bi bi-telephone"></i> {{ req.borrower.phone }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ req.duration_days }} days</td>
+                                    <td>
+                                        <span class="small text-secondary">{{ req.message or 'No message provided' }}</span>
+                                    </td>
+                                    <td class="small text-muted">{{ req.request_date.strftime('%b %d') }}</td>
+                                    <td>
+                                        {% if req.status == 'Pending' %}
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i> Pending</span>
+                                        {% elif req.status == 'Approved' %}
+                                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Approved</span>
+                                        {% elif req.status == 'Declined' %}
+                                            <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Declined</span>
+                                        {% elif req.status == 'Returned' %}
+                                            <span class="badge bg-secondary"><i class="bi bi-arrow-counterclockwise me-1"></i> Returned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if req.status == 'Pending' %}
+                                            <div class="btn-group btn-group-sm">
+                                                <form action="{{ url_for('requests.approve_request', request_id=req.id) }}" method="POST" class="d-inline">
+                                                    <button type="submit" class="btn btn-success btn-sm">
+                                                        <i class="bi bi-check-lg"></i> Approve
+                                                    </button>
+                                                </form>
+                                                <form action="{{ url_for('requests.decline_request', request_id=req.id) }}" method="POST" class="d-inline ms-1">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                        <i class="bi bi-x-lg"></i> Decline
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        {% elif req.status == 'Approved' %}
+                                            <form action="{{ url_for('requests.return_book', request_id=req.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3">
+                                                    <i class="bi bi-check2-all me-1"></i> Mark as Returned
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <span class="text-muted small">No action needed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        No incoming requests for your books at the moment.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Outgoing Requests Tab -->
+        <div class="tab-pane fade" id="outgoing" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <h5 class="fw-bold mb-3">Books You've Requested</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Book</th>
+                                <th>Owner</th>
+                                <th>Duration</th>
+                                <th>Your Message</th>
+                                <th>Requested On</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in outgoing %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('books.detail', book_id=req.book.id) }}" class="fw-semibold text-dark text-decoration-none">
+                                            {{ req.book.title }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div>{{ req.owner.full_name }}</div>
+                                        <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ req.owner.location or 'Campus' }}</small>
+                                        {% if req.status == 'Approved' and req.owner.phone %}
+                                            <br><small class="text-success"><i class="bi bi-telephone"></i> {{ req.owner.phone }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ req.duration_days }} days</td>
+                                    <td>
+                                        <span class="small text-secondary">{{ req.message }}</span>
+                                    </td>
+                                    <td class="small text-muted">{{ req.request_date.strftime('%b %d') }}</td>
+                                    <td>
+                                        {% if req.status == 'Pending' %}
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i> Pending Approval</span>
+                                        {% elif req.status == 'Approved' %}
+                                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Approved! Ready to collect</span>
+                                        {% elif req.status == 'Declined' %}
+                                            <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i> Declined</span>
+                                        {% elif req.status == 'Returned' %}
+                                            <span class="badge bg-secondary"><i class="bi bi-arrow-counterclockwise me-1"></i> Returned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if req.status == 'Pending' %}
+                                            <form action="{{ url_for('requests.cancel_request', request_id=req.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Cancel this borrow request?');">
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                                                    Cancel Request
+                                                </button>
+                                            </form>
+                                        {% elif req.status == 'Approved' %}
+                                            <form action="{{ url_for('requests.return_book', request_id=req.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                                    <i class="bi bi-check2-all me-1"></i> Mark as Returned
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <span class="text-muted small">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        You haven't requested any books yet. <a href="{{ url_for('books.catalog') }}">Browse books now</a>.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Books - BookShare Community{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-6">
+            <h2 class="fw-bold font-serif mb-1">Community Library</h2>
+            <p class="text-muted small mb-0">Browse {{ books|length }} books shared by community members</p>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('books.add_book') }}" class="btn btn-primary rounded-pill px-3">
+                    <i class="bi bi-plus-circle me-1"></i> Add Your Book
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 bg-white">
+        <form action="{{ url_for('books.catalog') }}" method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small fw-semibold text-muted">Search Keywords</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control bg-light border-start-0 ps-0" placeholder="Title, author, keywords..." value="{{ current_query }}">
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <label class="form-label small fw-semibold text-muted">Genre</label>
+                <select name="genre" class="form-select bg-light">
+                    <option value="all">All Genres</option>
+                    {% for g in genres %}
+                        <option value="{{ g }}" {% if current_genre == g %}selected{% endif %}>{{ g }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2 col-sm-6">
+                <label class="form-label small fw-semibold text-muted">Condition</label>
+                <select name="condition" class="form-select bg-light">
+                    <option value="all">All Conditions</option>
+                    {% for c in conditions %}
+                        <option value="{{ c }}" {% if current_condition == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2 col-sm-6">
+                <label class="form-label small fw-semibold text-muted">Status</label>
+                <select name="availability" class="form-select bg-light">
+                    <option value="all" {% if current_availability == 'all' %}selected{% endif %}>All Books</option>
+                    <option value="available" {% if current_availability == 'available' %}selected{% endif %}>Available Now</option>
+                    <option value="borrowed" {% if current_availability == 'borrowed' %}selected{% endif %}>Currently Borrowed</option>
+                </select>
+            </div>
+
+            <div class="col-md-1 col-sm-6 d-grid">
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Active Filters Feedback & Clear Button -->
+    {% if current_query or (current_genre and current_genre != 'all') or (current_condition and current_condition != 'all') or (current_availability and current_availability != 'all') %}
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <span class="small text-muted">Active filters:</span>
+            {% if current_query %}
+                <span class="badge bg-secondary">"{{ current_query }}"</span>
+            {% endif %}
+            {% if current_genre and current_genre != 'all' %}
+                <span class="badge bg-secondary">{{ current_genre }}</span>
+            {% endif %}
+            {% if current_condition and current_condition != 'all' %}
+                <span class="badge bg-secondary">Condition: {{ current_condition }}</span>
+            {% endif %}
+            {% if current_availability and current_availability != 'all' %}
+                <span class="badge bg-secondary">Status: {{ current_availability|capitalize }}</span>
+            {% endif %}
+            <a href="{{ url_for('books.catalog') }}" class="small text-danger ms-2 text-decoration-none">
+                <i class="bi bi-x-circle"></i> Clear filters
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Books Grid -->
+    <div class="row g-4">
+        {% for book in books %}
+            <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="card h-100 border-0 shadow-sm book-card rounded-3 overflow-hidden">
+                    <div class="book-cover-container position-relative">
+                        <img src="{{ book.cover_url }}" class="card-img-top book-cover-img" alt="{{ book.title }}">
+                        {% if book.is_available %}
+                            <span class="badge bg-success position-absolute top-0 end-0 m-2 shadow-sm">
+                                <i class="bi bi-check-circle me-1"></i> Available
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary position-absolute top-0 end-0 m-2 shadow-sm">
+                                <i class="bi bi-clock-history me-1"></i> Borrowed
+                            </span>
+                        {% endif %}
+                        <span class="badge bg-dark bg-opacity-75 position-absolute bottom-0 start-0 m-2">
+                            {{ book.genre }}
+                        </span>
+                    </div>
+
+                    <div class="card-body d-flex flex-column p-3">
+                        <h6 class="card-title fw-bold text-truncate mb-1" title="{{ book.title }}">
+                            <a href="{{ url_for('books.detail', book_id=book.id) }}" class="text-dark text-decoration-none hover-primary">
+                                {{ book.title }}
+                            </a>
+                        </h6>
+                        <p class="card-subtitle text-muted small mb-2 text-truncate">by {{ book.author }}</p>
+
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="badge bg-light text-dark border small">{{ book.condition }}</span>
+                            <div class="small text-warning">
+                                {% if book.average_rating > 0 %}
+                                    <i class="bi bi-star-fill"></i>
+                                    <span class="fw-semibold text-dark">{{ book.average_rating }}</span>
+                                    <span class="text-muted">({{ book.review_count }})</span>
+                                {% else %}
+                                    <span class="text-muted small">No reviews</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mt-auto pt-2 border-top d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-1 small text-muted">
+                                <i class="bi bi-geo-alt"></i>
+                                <span class="text-truncate" style="max-width: 90px;">{{ book.owner.location or book.owner.full_name }}</span>
+                            </div>
+                            <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="text-muted mb-3">
+                    <i class="bi bi-search fs-1"></i>
+                </div>
+                <h5 class="fw-bold">No books found matching your criteria</h5>
+                <p class="text-muted">Try removing filters or searching with different terms.</p>
+                <a href="{{ url_for('books.catalog') }}" class="btn btn-outline-primary rounded-pill px-4">
+                    Reset Filters
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.full_name }} - Community Member Profile{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- Left: Profile Info -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white text-center">
+                <div class="avatar-circle-xl mx-auto mb-3">
+                    {{ user.full_name[:1].upper() }}
+                </div>
+                <h4 class="fw-bold mb-1">{{ user.full_name }}</h4>
+                <p class="text-muted small mb-3">@{{ user.username }}</p>
+
+                <div class="d-flex align-items-center justify-content-center gap-2 text-muted small mb-3">
+                    <i class="bi bi-geo-alt"></i>
+                    <span>{{ user.location or 'Campus Community' }}</span>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 d-flex justify-content-around small">
+                    <div>
+                        <span class="d-block fw-bold text-dark fs-5">{{ books|length }}</span>
+                        <span class="text-muted">Books Available</span>
+                    </div>
+                    <div class="border-start"></div>
+                    <div>
+                        <span class="d-block fw-bold text-dark fs-5">{{ user.created_at.strftime('%Y') }}</span>
+                        <span class="text-muted">Member Since</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Books Available from this User -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+                <h4 class="fw-bold font-serif mb-4">Books Available from {{ user.full_name }}</h4>
+
+                <div class="row g-3">
+                    {% for book in books %}
+                        <div class="col-md-6">
+                            <div class="card border rounded-3 p-3 h-100">
+                                <div class="d-flex gap-3">
+                                    <img src="{{ book.cover_url }}" alt="{{ book.title }}" class="rounded shadow-sm" style="width: 70px; height: 95px; object-fit: cover;">
+                                    <div class="d-flex flex-column flex-grow-1 overflow-hidden">
+                                        <h6 class="fw-bold mb-1 text-truncate" title="{{ book.title }}">
+                                            <a href="{{ url_for('books.detail', book_id=book.id) }}" class="text-dark text-decoration-none">
+                                                {{ book.title }}
+                                            </a>
+                                        </h6>
+                                        <p class="text-muted small mb-2 text-truncate">by {{ book.author }}</p>
+                                        <span class="badge bg-light text-dark border align-self-start small mb-2">{{ book.genre }}</span>
+                                        <div class="mt-auto">
+                                            <a href="{{ url_for('books.detail', book_id=book.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                View Book
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-12 text-center py-5">
+                            <p class="text-muted">No books currently available from this member.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
